@@ -11,13 +11,13 @@ class Spawner {
         this.harvesters = Utils.creeps_get(this.room, 'harvester');
         this.miners = Utils.creeps_get(this.room, 'miner');
     }
-    
+
     run() {
         if (!this.spawn.spawning) {
             if (this.harvesters.length >= 4 && this.builders.length < MAX_BUILD_COUNT) {
                 this.spawnCreepBuilder();
             } else {
-                var sourcesData = this.room.memory.sources;
+                let sourcesData = this.room.memory.sources;
                 sourcesData.some(function (sourceData) {
                     if (sourceData.minerCount < HARVESTER_COUNT_PER_SOURCE) {
                         this.spawnCreepHarvester(sourceData);
@@ -28,34 +28,28 @@ class Spawner {
             }
         }
     }
-    
+
     spawnCreepBuilder() {
-        var job = 'builder';
-        var creepName = 'Builder' + Game.time;
-        if (this.spawn.spawnCreep([WORK, CARRY, CARRY, MOVE], creepName,
-            {memory: {role: job, working: false}}) == OK) {
+        let job = 'builder';
+        let creepName = 'Builder' + Game.time;
+        if (OK === this.spawn.spawnCreep([WORK, CARRY, CARRY, MOVE], creepName,
+                {memory: {role: job, working: false}})) {
             this.room.memory.creeps.push(creepName);
             console.log("Spawning " + job + ": " + Game.creeps[creepName]);
         }
     }
-    
+
     spawnCreepHarvester(sourceData) {
-        var job = 'harvester';
-        var creepName = 'Harvester' + Game.time;
-        var source = Game.getObjectById(sourceData.ID);
-        if (this.spawn.spawnCreep([WORK, CARRY, MOVE, MOVE], creepName,
-            {memory: {role: job, sourceID: source.id}}) == OK) {
+        let job = 'harvester';
+        let creepName = 'Harvester' + Game.time;
+        let source = Game.getObjectById(sourceData.ID);
+        if (OK === this.spawn.spawnCreep([WORK, CARRY, MOVE, MOVE], creepName,
+                {memory: {role: job, sourceID: source.id}})) {
             this.room.memory.creeps.push(creepName);
             sourceData.minerCount++;
             console.log("Spawning " + job + ": " + Game.creeps[creepName]);
         }
     }
-    
-    logCreepCount() {
-        console.log("Harvesters: " + this.harvesters.length);
-        console.log("Miners: " + this.miners.length);
-    }
-    
 }
 
 module.exports = Spawner;
