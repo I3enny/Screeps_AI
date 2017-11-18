@@ -1,4 +1,4 @@
-var Utils = require('utils');
+let Utils = require('utils');
 
 class MemoryCleaner {
     constructor() {

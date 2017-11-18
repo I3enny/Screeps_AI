@@ -1,33 +1,33 @@
-let Utils = require('utils');
+let CreepUtils = require('creepUtils');
 
-const MIN_HARVESTER_COUNT = 4;
-const MAX_HARVESTER_COUNT_PER_SOURCE = 3;
-const MAX_BUILDER_COUNT = 2;
-const MAX_ROOM_MAINTAINER = 2;
+const MIN_HARVESTER = 4;
+const MAX_HARVESTER_PER_SOURCE = 3;
+const MAX_BUILDER = 2;
+const MAX_CONTROLLER_UPGRADER = 2;
 
 class Spawner {
     constructor(spawnName) {
         this.spawn = Game.spawns[spawnName];
         this.room = this.spawn.room;
-        this.builders = Utils.creeps_get(this.room, 'builder');
-        this.harvesters = Utils.creeps_get(this.room, 'harvester');
-        this.roomMaintainers = Utils.creeps_get(this.room, 'roomMaintainer');
+        this.builders = CreepUtils.creeps_get(this.room, 'Builder');
+        this.harvesters = CreepUtils.creeps_get(this.room, 'Harvester');
+        this.roomControllerUpgraders = CreepUtils.creeps_get(this.room, 'ControllerUpgrader');
     }
 
     run() {
         if (!this.spawn.spawning) {
             let toBuild = this.room.find(FIND_MY_CONSTRUCTION_SITES);
-            if (this.harvesters.length >= MIN_HARVESTER_COUNT) {
-                if (this.roomMaintainers.length < MAX_ROOM_MAINTAINER) {
-                    this.spawnCreepRoomMaintainer();
-                } else if (this.roomMaintainers.length >= 1 &&
-                    this.builders.length < MAX_BUILDER_COUNT && toBuild.length) {
+            if (this.harvesters.length >= MIN_HARVESTER) {
+                if (this.roomControllerUpgraders.length < MAX_CONTROLLER_UPGRADER) {
+                    this.spawnCreepControllerUpgrader();
+                } else if (this.roomControllerUpgraders.length >= 1 &&
+                    this.builders.length < MAX_BUILDER && toBuild.length) {
                     this.spawnCreepBuilder();
                 }
             } else {
                 let sourcesData = this.room.memory.sources;
                 sourcesData.some(function (sourceData) {
-                    if (sourceData.minerCount < MAX_HARVESTER_COUNT_PER_SOURCE) {
+                    if (sourceData.minerCount < MAX_HARVESTER_PER_SOURCE) {
                         this.spawnCreepHarvester(sourceData);
                         return true;
                     }
@@ -38,18 +38,18 @@ class Spawner {
     }
 
     spawnCreepBuilder() {
-        let job = 'builder';
-        let creepName = 'Builder' + Game.time;
+        let job = 'Builder';
+        let creepName = job + Game.time;
         if (OK === this.spawn.spawnCreep([WORK, CARRY, CARRY, MOVE], creepName,
-                {memory: {role: job, working: false}})) {
+                {memory: {role: job}})) {
             this.room.memory.creeps.push(creepName);
             console.log("Spawning " + job + ": " + Game.creeps[creepName]);
         }
     }
 
     spawnCreepHarvester(sourceData) {
-        let job = 'harvester';
-        let creepName = 'Harvester' + Game.time;
+        let job = 'Harvester';
+        let creepName = job + Game.time;
         let source = Game.getObjectById(sourceData.ID);
         if (OK === this.spawn.spawnCreep([WORK, CARRY, MOVE, MOVE], creepName,
                 {memory: {role: job, sourceID: source.id}})) {
@@ -59,9 +59,9 @@ class Spawner {
         }
     }
 
-    spawnCreepRoomMaintainer() {
-        let job = 'roomMaintainer';
-        let creepName = 'RoomMaintainer' + Game.time;
+    spawnCreepControllerUpgrader() {
+        let job = 'ControllerUpgrader';
+        let creepName = job + Game.time;
         if (OK === this.spawn.spawnCreep([WORK, CARRY, CARRY, MOVE], creepName,
                 {memory: {role: job}})) {
             this.room.memory.creeps.push(creepName);
