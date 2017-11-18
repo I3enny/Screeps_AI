@@ -14,7 +14,7 @@ class MemoryCleaner {
                     if (!creep) {
                         let role = Memory.creeps[creepName].role;
                         switch (role) {
-                            case 'harvester':
+                            case 'Harvester':
                                 let sourceID = Memory.creeps[creepName].sourceID;
                                 let sources = room.memory.sources;
                                 sources.some(function (source) {

@@ -34,7 +34,7 @@ class RoomHandler {
                     this.runControllerUpgrader(creep);
                     break;
                 default:
-                    console.log(creep + " has no job, suicide ordered");
+                    console.log(creep + " has no job, suicide ordered.");
                     creep.suicide();
             }
         }, this);
@@ -50,8 +50,26 @@ class RoomHandler {
         } else if (creep.memory.working) {
             creep.memory.working = false;
         } else if (creep.carry.energy < creep.carryCapacity) {
-            let storages = StorageUtils.storagesNotEmpty_get(this.room);
+            let storages = StorageUtils.storages_get(this.room, 'Any', 'NotFull');
             let storage = creep.pos.findClosestByPath(storages);
+            if (ERR_NOT_IN_RANGE === creep.withdraw(storage, RESOURCE_ENERGY)) {
+                creep.moveTo(storage);
+            }
+        } else {
+            creep.memory.working = true;
+        }
+    }
+
+    runControllerUpgrader(creep) {
+        if (creep.memory.working && creep.carry.energy > 0) {
+            if (ERR_NOT_IN_RANGE === creep.upgradeController(this.room.controller)) {
+                creep.moveTo(this.room.controller);
+            }
+        } else if (creep.memory.working) {
+            creep.memory.working = false;
+        } else if (creep.carry.energy < creep.carryCapacity) {
+            let storages = StorageUtils.storages_get(this.room, 'Any', 'NotEmpty');
+            let storage = this.room.controller.pos.findClosestByPath(storages);
             if (ERR_NOT_IN_RANGE === creep.withdraw(storage, RESOURCE_ENERGY)) {
                 creep.moveTo(storage);
             }
@@ -67,7 +85,7 @@ class RoomHandler {
                 creep.moveTo(source, {visualizePathStyle: {}});
             }
         } else {
-            let storages = StorageUtils.storagesNotFull_get(this.room);
+            let storages = StorageUtils.storages_get(this.room, 'Any', 'NotFull');
             if (storages.length > 0) {
                 let storage = creep.pos.findClosestByPath(storages);
                 if (ERR_NOT_IN_RANGE === creep.transfer(storage, RESOURCE_ENERGY)) {
@@ -77,16 +95,18 @@ class RoomHandler {
         }
     }
 
-    runControllerUpgrader(creep) {
-        let roomController = this.room.controller;
+    /*
+    runSpawnRefiller(creep) {
         if (creep.memory.working && creep.carry.energy > 0) {
-            if (ERR_NOT_IN_RANGE === creep.upgradeController(roomController)) {
-                creep.moveTo(roomController);
+            let spawnParts = StorageUtils.energyStoragesNotFull_get();
+            let target = creep.pos.findClosestByPath(spawnParts);
+            if (ERR_NOT_IN_RANGE === creep.transfer(target)) {
+                creep.moveTo(target);
             }
         } else if (creep.memory.working) {
             creep.memory.working = false;
         } else if (creep.carry.energy < creep.carryCapacity) {
-            let storages = StorageUtils.storagesNotEmpty_get(this.room);
+            let storages = StorageUtils.storage(this.room);
             let storage = roomController.pos.findClosestByPath(storages);
             if (ERR_NOT_IN_RANGE === creep.withdraw(storage, RESOURCE_ENERGY)) {
                 creep.moveTo(storage);
@@ -94,11 +114,7 @@ class RoomHandler {
         } else {
             creep.memory.working = true;
         }
-    }
-
-    runMaintainer(creep) {
-
-    }
+    }*/
 }
 
 module.exports = RoomHandler;

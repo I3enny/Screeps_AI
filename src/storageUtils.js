@@ -1,50 +1,37 @@
 class StorageUtils {
-    static isEnergyStorage(structure) {
-        return STRUCTURE_SPAWN === structure.structureType ||
-            STRUCTURE_EXTENSION === structure.structureType;
-    }
 
-    static isEnergyStorageNotFull(structure) {
-        return this.isEnergyStorage(structure) &&
-            structure.energy < structure.energyCapacity;
-    }
-
-    static isEnergyStorageNotEmpty(structure) {
-        return this.isEnergyStorage(structure) &&
-            structure.energy > 0;
-    }
-
-    static isStorage(structure) {
-        return STRUCTURE_STORAGE === structure.structureType ||
-            STRUCTURE_CONTAINER === structure.structureType;
-    }
-
-    static isStorageNotFull(structure) {
-        return this.isStorage(structure) &&
-            structure.store['energy'] < structure.storeCapacity;
-    }
-
-    static isStorageNotEmpty(structure) {
-        return this.isStorage(structure) &&
-            structure.store['energy'] > 0;
-    }
-
-    static storagesNotEmpty_get(room) {
-        return room.find(FIND_STRUCTURES, {
-            filter: (structure) => {
-                return this.isStorageNotEmpty(structure) ||
-                    this.isEnergyStorageNotEmpty(structure);
+    static storages_get(room, type, state) {
+        let structures = room.find(FIND_MY_STRUCTURES);
+        let storages = [];
+        structures.forEach(function (structure) {
+            if (('Any' === type || 'Energy' === type) &&
+                (STRUCTURE_SPAWN === structure.structureType ||
+                    STRUCTURE_EXTENSION === structure.structureType)) {
+                if ('Empty' === state && 0 === structure.energy)
+                    storages.push(structure);
+                else if ('NotEmpty' === state && structure.energy > 0)
+                    storages.push(structure);
+                else if ('Full' === state && structure.energy === structure.energyCapacity)
+                    storages.push(structure);
+                else if ('NotFull' === state && structure.energy < structure.energyCapacity)
+                    storages.push(structure);
+            } else if (('Any' === type || 'Container' === type) &&
+                (STRUCTURE_STORAGE === structure.structureType ||
+                    STRUCTURE_CONTAINER === structure.structureType)) {
+                const total = _.sum(structure.store);
+                console.log(total);
+                if ('Empty' === state && 0 === total)
+                    storages.push(structure);
+                else if ('NotEmpty' === state && total > 0)
+                    storages.push(structure);
+                else if ('Full' === state && total === structure.storeCapacity)
+                    storages.push(structure);
+                else if ('NotFull' === state && total < structure.storeCapacity)
+                    storages.push(structure);
             }
         });
-    }
-
-    static storagesNotFull_get(room) {
-        return room.find(FIND_STRUCTURES, {
-            filter: (structure) => {
-                return this.isStorageNotFull(structure) ||
-                    this.isEnergyStorageNotFull(structure);
-            }
-        });
+        //console.log("Call : storages_get(" + room + ", '" + type + "', '" + state + "')");
+        return storages;
     }
 }
 
