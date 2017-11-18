@@ -6,6 +6,7 @@
   
   * Creeps
     - Save creep path
+	- Remove thick loss when switching working state
   
   * Creep Buidler
     - Build order with priority

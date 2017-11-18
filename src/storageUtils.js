@@ -7,7 +7,9 @@ class StorageUtils {
             if (('Any' === type || 'Energy' === type) &&
                 (STRUCTURE_SPAWN === structure.structureType ||
                     STRUCTURE_EXTENSION === structure.structureType)) {
-                if ('Empty' === state && 0 === structure.energy)
+                if (!state)
+                    storages.push(structure);
+                else if ('Empty' === state && 0 === structure.energy)
                     storages.push(structure);
                 else if ('NotEmpty' === state && structure.energy > 0)
                     storages.push(structure);
@@ -19,8 +21,9 @@ class StorageUtils {
                 (STRUCTURE_STORAGE === structure.structureType ||
                     STRUCTURE_CONTAINER === structure.structureType)) {
                 const total = _.sum(structure.store);
-                console.log(total);
-                if ('Empty' === state && 0 === total)
+                if (!state)
+                    storages.push(structure);
+                else if ('Empty' === state && 0 === total)
                     storages.push(structure);
                 else if ('NotEmpty' === state && total > 0)
                     storages.push(structure);

@@ -1,72 +1,82 @@
 let CreepUtils = require('creepUtils');
+let StorageUtils = require('storageUtils');
 
 const MIN_HARVESTER = 4;
 const MAX_HARVESTER_PER_SOURCE = 3;
 const MAX_BUILDER = 2;
-const MAX_CONTROLLER_UPGRADER = 2;
+const MAX_CONTROLLER_UPGRADER = 1;
+const MAX_SPAWN_REFILLER = 1;
 
 class Spawner {
     constructor(spawnName) {
         this.spawn = Game.spawns[spawnName];
         this.room = this.spawn.room;
         this.builders = CreepUtils.creeps_get(this.room, 'Builder');
+        this.controllerUpgraders = CreepUtils.creeps_get(this.room, 'ControllerUpgrader');
         this.harvesters = CreepUtils.creeps_get(this.room, 'Harvester');
-        this.roomControllerUpgraders = CreepUtils.creeps_get(this.room, 'ControllerUpgrader');
+        this.spawnRefiller = CreepUtils.creeps_get(this.room, 'SpawnRefiller');
     }
 
     run() {
         if (!this.spawn.spawning) {
             let toBuild = this.room.find(FIND_MY_CONSTRUCTION_SITES);
             if (this.harvesters.length >= MIN_HARVESTER) {
-                if (this.roomControllerUpgraders.length < MAX_CONTROLLER_UPGRADER) {
-                    this.spawnCreepControllerUpgrader();
-                } else if (this.roomControllerUpgraders.length >= 1 &&
+                let containers = StorageUtils.storages_get(this.room, 'Container');
+                if (this.spawnRefiller.length < MAX_SPAWN_REFILLER && containers && containers.length) {
+                    return this.spawnCreep('spawnRefiller');
+                } else if (this.controllerUpgraders.length < MAX_CONTROLLER_UPGRADER) {
+                    return this.spawnCreep('ControllerUpgrader');
+                } else if (this.controllerUpgraders.length >= 1 &&
                     this.builders.length < MAX_BUILDER && toBuild.length) {
-                    this.spawnCreepBuilder();
+                    return this.spawnCreep('Builder');
                 }
-            } else {
-                let sourcesData = this.room.memory.sources;
-                sourcesData.some(function (sourceData) {
-                    if (sourceData.minerCount < MAX_HARVESTER_PER_SOURCE) {
-                        this.spawnCreepHarvester(sourceData);
-                        return true;
-                    }
-                    return false;
-                }, this);
             }
+            let sourcesData = this.room.memory.sources;
+            sourcesData.some(function (sourceData) {
+                if (sourceData.minerCount < MAX_HARVESTER_PER_SOURCE) {
+                    return this.spawnCreep('Harvester', sourceData);
+                }
+                return false;
+            }, this);
         }
     }
 
-    spawnCreepBuilder() {
-        let job = 'Builder';
+    spawnCreep(job, arg1) {
         let creepName = job + Game.time;
-        if (OK === this.spawn.spawnCreep([WORK, CARRY, CARRY, MOVE], creepName,
-                {memory: {role: job}})) {
-            this.room.memory.creeps.push(creepName);
-            console.log("Spawning " + job + ": " + Game.creeps[creepName]);
+        let components = [];
+        let data = {};
+        switch (job) {
+            case ('Builder'):
+                components = [WORK, CARRY, CARRY, MOVE];
+                break;
+            case ('ControllerUpgrader'):
+                components = [WORK, CARRY, CARRY, MOVE];
+                break;
+            case ('Harvester'):
+                components = [WORK, CARRY, MOVE, MOVE];
+                break;
+            case('Maintainer'):
+                components = [WORK, CARRY, CARRY, MOVE];
+                break;
         }
-    }
-
-    spawnCreepHarvester(sourceData) {
-        let job = 'Harvester';
-        let creepName = job + Game.time;
-        let source = Game.getObjectById(sourceData.ID);
-        if (OK === this.spawn.spawnCreep([WORK, CARRY, MOVE, MOVE], creepName,
-                {memory: {role: job, sourceID: source.id}})) {
-            this.room.memory.creeps.push(creepName);
-            sourceData.minerCount++;
-            console.log("Spawning " + job + ": " + Game.creeps[creepName]);
+        switch (job) {
+            case ('Builder'):
+            case ('ControllerUpgrader'):
+            case('Maintainer'):
+                data = {role: job};
+                break;
+            case ('Harvester'):
+                let source = Game.getObjectById(arg1.ID);
+                data = {role: job, sourceID : source.id};
         }
-    }
-
-    spawnCreepControllerUpgrader() {
-        let job = 'ControllerUpgrader';
-        let creepName = job + Game.time;
-        if (OK === this.spawn.spawnCreep([WORK, CARRY, CARRY, MOVE], creepName,
-                {memory: {role: job}})) {
+        if (OK === this.spawn.spawnCreep(components, creepName, {memory: data})) {
             this.room.memory.creeps.push(creepName);
-            console.log("Spawning " + job + ": " + Game.creeps[creepName]);
+            if ('Harvester' === job)
+                arg1.minerCount++;
+            console.log("Spawning: " + Game.creeps[creepName]);
+            return true;
         }
+        return false;
     }
 }
 
