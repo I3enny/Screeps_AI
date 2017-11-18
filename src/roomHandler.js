@@ -3,10 +3,7 @@ var Utils = require('utils');
 class RoomHandler {
     constructor(roomName) {
         this.room = Game.rooms[roomName];
-        this.builders = Utils.creeps_get(this.room, 'builder');
-        this.harvesters = Utils.creeps_get(this.room, 'harvester');
-        this.miners = Utils.creeps_get(this.room, 'miner');
-        this.creeps = Utils.creeps_get_all(this.room);
+        this.creeps = Utils.creeps_get(this.room);
 
 
         if (!this.room.memory.creeps) {
@@ -24,11 +21,17 @@ class RoomHandler {
     }
 
     run() {
-        this.harvesters.forEach(function (creep) {
-            this.runHarvester(creep);
-        }, this);
-        this.builders.forEach(function (creep) {
-            this.runBuilder(creep);
+        this.creeps.forEach(function (creep) {
+            switch (creep.memory.role) {
+                case ('builder'):
+                    this.runBuilder(creep);
+                    break;
+                case ('harvester'):
+                    this.runHarvester(creep);
+                    break;
+                default:
+                    console.log(creep + " has no job");
+            }
         }, this);
     }
 

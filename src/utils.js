@@ -6,13 +6,13 @@ class Utils {
         }
     }
 
-    static creeps_get_all(room) {
-        return _.filter(Game.creeps, (creep) => room.memory.creeps.includes(creep.name));
-    }
-
     static creeps_get(room, job) {
-        return _.filter(Game.creeps, (creep) => room.memory.creeps.includes(creep.name) &&
-            creep.memory.role === job);
+        if (job) {
+            return _.filter(Game.creeps, (creep) => room.memory.creeps.includes(creep.name) &&
+                creep.memory.role === job);
+        } else {
+            return _.filter(Game.creeps, (creep) => room.memory.creeps.includes(creep.name));
+        }
     }
 
     static isEnergyContainer(structure) {

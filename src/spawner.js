@@ -1,7 +1,7 @@
 var Utils = require('utils');
 
 const HARVESTER_COUNT_PER_SOURCE = 3;
-const MAX_BUILD_COUNT = 2;
+const MAX_BUILD_COUNT = 1;
 
 class Spawner {
     constructor(spawnName) {
@@ -9,7 +9,6 @@ class Spawner {
         this.room = this.spawn.room;
         this.builders = Utils.creeps_get(this.room, 'builder');
         this.harvesters = Utils.creeps_get(this.room, 'harvester');
-        this.miners = Utils.creeps_get(this.room, 'miner');
     }
 
     run() {
