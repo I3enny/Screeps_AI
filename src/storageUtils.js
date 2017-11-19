@@ -1,7 +1,6 @@
 class StorageUtils {
-
     static storages_get(room, type, state) {
-        let structures = room.find(FIND_MY_STRUCTURES);
+        let structures = room.find(FIND_STRUCTURES);
         let storages = [];
         structures.forEach(function (structure) {
             if (('Any' === type || 'Energy' === type) &&
@@ -35,6 +34,10 @@ class StorageUtils {
         });
         //console.log("Call : storages_get(" + room + ", '" + type + "', '" + state + "')");
         return storages;
+    }
+
+    static hasStorages() {
+
     }
 }
 
