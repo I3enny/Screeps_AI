@@ -42,7 +42,7 @@ class RoomHandler {
                     this.runSpawnRefiller(creep)
                     break;
                 default:
-                    console.log(creep + " has no job, suicide ordered.");
+                    console.log(creep + " has no job, suicide ordered");
                     creep.suicide();
             }
         }, this);
@@ -92,23 +92,27 @@ class RoomHandler {
             }
         } else {
             creep.memory.working = true;
+            delete creep.memory.storageID;
         }
     }
 
     runHarvester(creep) {
-        if (creep.carry.energy < creep.carryCapacity) {
+        if (creep.memory.working && creep.carry.energy < creep.carryCapacity) {
             let source = Game.getObjectById(creep.memory.sourceID);
             if (ERR_NOT_IN_RANGE === creep.harvest(source)) {
                 creep.moveTo(source, {visualizePathStyle: {}});
             }
-        } else {
+        } else if (creep.memory.working) {
+            creep.memory.working = false;
+        } else if (creep.carry.energy > 0) {
             let storages = StorageUtils.storages_get(this.room, 'Any', 'NotFull');
-            if (storages.length > 0) {
-                let storage = creep.pos.findClosestByPath(storages);
-                if (ERR_NOT_IN_RANGE === creep.transfer(storage, RESOURCE_ENERGY)) {
-                    creep.moveTo(storage, {visualizePathStyle: {}});
-                }
+            let storage = creep.pos.findClosestByPath(storages);
+            // TODO Better storage handling
+            if (ERR_NOT_IN_RANGE === creep.transfer(storage, RESOURCE_ENERGY)) {
+                creep.moveTo(storage, {visualizePathStyle: {}});
             }
+        } else {
+            creep.memory.working = true;
         }
     }
 
@@ -119,6 +123,7 @@ class RoomHandler {
                 creep.moveTo(target);
             }
         } else if (creep.memory.working) {
+            delete creep.memory.targetID;
             creep.memory.working = false;
         } else if (creep.carry.energy < creep.carryCapacity) {
             let storages = StorageUtils.storages_get(this.room, 'Container', 'NotEmpty');
@@ -134,6 +139,7 @@ class RoomHandler {
             if (structures && structures.length) {
                 let target = structures[0];
                 creep.memory.targetID = target.id;
+                delete creep.memory.storageID;
                 creep.memory.working = true;
             }
         }
