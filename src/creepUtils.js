@@ -5,17 +5,17 @@ const WORK_COST = 100;
 const baseComponents = [
     ['Builder', [WORK, CARRY, CARRY, MOVE]],
     ['ControllerUpgrader', [WORK, CARRY, CARRY, MOVE]],
-    ['Harvester', [WORK, CARRY, MOVE, MOVE]],
-    ['Maintainer', [WORK, CARRY, CARRY, MOVE]],
-    ['SpawnRefiller', [WORK, CARRY, CARRY, MOVE]]
+    ['Harvester', [WORK, CARRY, CARRY, MOVE]],
+    ['Maintainer', [WORK, CARRY, MOVE]],
+    ['SpawnRefiller', [CARRY, MOVE]]
 ];
 
 const bonusComponents = [
-    ['Builder', [WORK, CARRY]],
+    ['Builder', [WORK, CARRY, MOVE]],
     ['ControllerUpgrader', [WORK, WORK, CARRY]],
-    ['Harvester', [WORK, WORK, WORK, CARRY]],
-    ['Maintainer', [WORK, CARRY, CARRY]],
-    ['SpawnRefiller', [WORK, CARRY, CARRY, MOVE]]
+    ['Harvester', [WORK, WORK, CARRY, MOVE]],
+    ['Maintainer', [WORK, CARRY, MOVE]],
+    ['SpawnRefiller', [CARRY, MOVE]]
 ];
 
 const baseComponentsMap = new Map(baseComponents);

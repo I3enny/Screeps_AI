@@ -1,7 +1,7 @@
 let CreepUtils = require('creepUtils');
 let StorageUtils = require('storageUtils');
 
-const MAX_BUILDER = 1;
+const MAX_BUILDER = 2;
 const MAX_CONTROLLER_UPGRADER = 2;
 const MAX_CREEPS = 20;
 const MIN_HARVESTER = 6;

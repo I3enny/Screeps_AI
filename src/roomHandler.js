@@ -51,7 +51,7 @@ class RoomHandler {
     runBuilder(creep) {
         if (creep.memory.working && creep.carry.energy > 0) {
             let toBuild = this.room.find(FIND_MY_CONSTRUCTION_SITES);
-            if (toBuild.length) {
+            if (!toBuild ||toBuild.length) {
                 let building = toBuild[0];
                 if (ERR_NOT_IN_RANGE === creep.build(building)) {
                     creep.moveTo(building);
@@ -59,15 +59,19 @@ class RoomHandler {
             }
         } else if (creep.memory.working) {
             let storages = StorageUtils.storages_get(this.room, 'Container', 'NotEmpty');
-            if (!storages.length) {
+            if (!storages || !storages.length) {
                 storages = StorageUtils.storages_get(this.room, 'Energy', 'NotEmpty');
             }
-            let storage = creep.pos.findClosestByPath(storages);
-            creep.memory.storageID = storage.id;
-            creep.memory.working = false;
+            if (storages && storages.length) {
+                let storage = creep.pos.findClosestByPath(storages);
+                if (storage) {
+                    creep.memory.storageID = storage.id;
+                    creep.memory.working = false;
+                }
+            }
         } else if (creep.carry.energy < creep.carryCapacity) {
             let storage = Game.getObjectById(creep.memory.storageID);
-            if (ERR_NOT_IN_RANGE === creep.withdraw(storage, RESOURCE_ENERGY)) {
+            if (storage && ERR_NOT_IN_RANGE === creep.withdraw(storage, RESOURCE_ENERGY)) {
                 creep.moveTo(storage);
             }
         } else {
@@ -82,12 +86,16 @@ class RoomHandler {
             }
         } else if (creep.memory.working) {
             let storages = StorageUtils.storages_get(this.room, 'Any', 'NotEmpty');
-            let storage = this.room.controller.pos.findClosestByPath(storages);
-            creep.memory.storageID = storage.id;
-            creep.memory.working = false;
+            if (storages && storages.length) {
+                let storage = this.room.controller.pos.findClosestByPath(storages);
+                if (storage) {
+                    creep.memory.storageID = storage.id;
+                    creep.memory.working = false;
+                }
+            }
         } else if (creep.carry.energy < creep.carryCapacity) {
             let storage = Game.getObjectById(creep.memory.storageID);
-            if (ERR_NOT_IN_RANGE === creep.withdraw(storage, RESOURCE_ENERGY)) {
+            if (storage && ERR_NOT_IN_RANGE === creep.withdraw(storage, RESOURCE_ENERGY)) {
                 creep.moveTo(storage);
             }
         } else {
@@ -99,17 +107,19 @@ class RoomHandler {
     runHarvester(creep) {
         if (creep.memory.working && creep.carry.energy < creep.carryCapacity) {
             let source = Game.getObjectById(creep.memory.sourceID);
-            if (ERR_NOT_IN_RANGE === creep.harvest(source)) {
+            if (source && ERR_NOT_IN_RANGE === creep.harvest(source)) {
                 creep.moveTo(source, {visualizePathStyle: {}});
             }
         } else if (creep.memory.working) {
             creep.memory.working = false;
         } else if (creep.carry.energy > 0) {
             let storages = StorageUtils.storages_get(this.room, 'Any', 'NotFull');
-            let storage = creep.pos.findClosestByPath(storages);
-            // TODO Better storage handling
-            if (ERR_NOT_IN_RANGE === creep.transfer(storage, RESOURCE_ENERGY)) {
-                creep.moveTo(storage, {visualizePathStyle: {}});
+            if (storages && storages.length) {
+                let storage = creep.pos.findClosestByPath(storages);
+                // TODO Better storage handling (memory)
+                if (storage && ERR_NOT_IN_RANGE === creep.transfer(storage, RESOURCE_ENERGY)) {
+                    creep.moveTo(storage, {visualizePathStyle: {}});
+                }
             }
         } else {
             creep.memory.working = true;
@@ -119,7 +129,7 @@ class RoomHandler {
     runMaintainer(creep) {
         if (creep.memory.working && creep.carry.energy > 0) {
             let target = Game.getObjectById(creep.memory.targetID);
-            if (ERR_NOT_IN_RANGE === creep.repair(target)) {
+            if (target && ERR_NOT_IN_RANGE === creep.repair(target)) {
                 creep.moveTo(target);
             }
         } else if (creep.memory.working) {
@@ -129,8 +139,9 @@ class RoomHandler {
             let storages = StorageUtils.storages_get(this.room, 'Container', 'NotEmpty');
             if (!storages || !storages.length) {
                 storages = StorageUtils.storages_get(this.room, 'Energy', 'NotEmpty');
-            }let storage = creep.pos.findClosestByPath(storages);
-            if (ERR_NOT_IN_RANGE === creep.withdraw(storage, RESOURCE_ENERGY)) {
+            }
+            let storage = creep.pos.findClosestByPath(storages);
+            if (storage && ERR_NOT_IN_RANGE === creep.withdraw(storage, RESOURCE_ENERGY)) {
                 creep.moveTo(storage);
             }
         } else {
@@ -138,9 +149,11 @@ class RoomHandler {
                 (structure) => structure.hits < structure.hitsMax - REPAIR_THRESHOLD);
             if (structures && structures.length) {
                 let target = structures[0];
-                creep.memory.targetID = target.id;
-                delete creep.memory.storageID;
-                creep.memory.working = true;
+                if (target) {
+                    creep.memory.targetID = target.id;
+                    delete creep.memory.storageID;
+                    creep.memory.working = true;
+                }
             }
         }
     }
@@ -153,17 +166,21 @@ class RoomHandler {
         }
         let spawn = spawns[0];
         if (creep.memory.working && creep.carry.energy > 0) {
-            if (ERR_NOT_IN_RANGE === creep.transfer(spawn, RESOURCE_ENERGY)) {
+            if (spawn && ERR_NOT_IN_RANGE === creep.transfer(spawn, RESOURCE_ENERGY)) {
                 creep.moveTo(spawn);
             }
         } else if (creep.memory.working) {
             let storages = StorageUtils.storages_get(this.room, 'Container', 'NotEmpty');
-            let storage = spawn.pos.findClosestByPath(storages);
-            creep.memory.storageID = storage.id;
-            creep.memory.working = false;
+            if (storages && storages.length) {
+                let storage = spawn.pos.findClosestByPath(storages);
+                if (storage) {
+                    creep.memory.storageID = storage.id;
+                    creep.memory.working = false;
+                }
+            }
         } else if (creep.carry.energy < creep.carryCapacity) {
             let storage = Game.getObjectById(creep.memory.storageID);
-            if (ERR_NOT_IN_RANGE === creep.withdraw(storage, RESOURCE_ENERGY)) {
+            if (storage && ERR_NOT_IN_RANGE === creep.withdraw(storage, RESOURCE_ENERGY)) {
                 creep.moveTo(storage);
             }
         } else {
