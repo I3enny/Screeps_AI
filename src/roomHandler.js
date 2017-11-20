@@ -95,6 +95,7 @@ class RoomHandler {
             }
         } else if (creep.carry.energy < creep.carryCapacity) {
             let storage = Game.getObjectById(creep.memory.storageID);
+            // TODO Check storage emptiness
             if (storage && ERR_NOT_IN_RANGE === creep.withdraw(storage, RESOURCE_ENERGY)) {
                 creep.moveTo(storage);
             }
