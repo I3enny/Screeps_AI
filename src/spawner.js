@@ -1,14 +1,14 @@
 let CreepUtils = require('creepUtils');
 let StorageUtils = require('storageUtils');
 
-const MAX_BUILDER = 2;
+const MAX_BUILDER = 1;
 const MAX_CONTROLLER_UPGRADER = 2;
 const MAX_CREEPS = 20;
 const MIN_HARVESTER = 6;
 const MAX_HARVESTER_PER_SOURCE = 3;
 const MAX_MAINTAINER = 1;
 const MAX_SPAWN_REFILLER = 1;
-const MIN_ENERGY_TO_SPAWN = 250;
+const MIN_ENERGY_TO_SPAWN = 100;
 
 class Spawner {
     constructor(spawnName) {
@@ -30,7 +30,9 @@ class Spawner {
     run() {
         if (!this.spawn.spawning && this.creeps.length < MAX_CREEPS && this.energyAvailable > MIN_ENERGY_TO_SPAWN) {
             let toBuild = this.room.find(FIND_MY_CONSTRUCTION_SITES);
-            if (this.harvesters.length >= MIN_HARVESTER) {
+            if (this.maintainers.length < MAX_MAINTAINER) {
+                return this.spawnCreep('Maintainer');
+            } else if (this.harvesters.length >= MIN_HARVESTER) {
                 let containers = StorageUtils.storages_get(this.room, 'Container');
                 if (this.spawnRefiller.length < MAX_SPAWN_REFILLER && containers && containers.length) {
                     return this.spawnCreep('SpawnRefiller');
@@ -38,8 +40,6 @@ class Spawner {
                     return this.spawnCreep('Builder');
                 } else if (this.controllerUpgraders.length < MAX_CONTROLLER_UPGRADER) {
                     return this.spawnCreep('ControllerUpgrader');
-                } else if (this.maintainers.length < MAX_MAINTAINER) {
-                    return this.spawnCreep('Maintainer');
                 }
             }
             let sourcesData = this.room.memory.sources;

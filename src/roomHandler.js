@@ -71,6 +71,18 @@ class RoomHandler {
             }
         } else if (creep.carry.energy < creep.carryCapacity) {
             let storage = Game.getObjectById(creep.memory.storageID);
+            if (StorageUtils.isState(storage, 'Any', 'Empty')) {
+                let storages = StorageUtils.storages_get(this.room, 'Container', 'NotEmpty');
+                if (!storages || !storages.length) {
+                    storages = StorageUtils.storages_get(this.room, 'Energy', 'NotEmpty');
+                }
+                if (storages && storages.length) {
+                    let storage = creep.pos.findClosestByPath(storages);
+                    if (storage)
+                        creep.memory.storageID = storage.id;
+                }
+            }
+
             if (storage && ERR_NOT_IN_RANGE === creep.withdraw(storage, RESOURCE_ENERGY)) {
                 creep.moveTo(storage);
             }
@@ -95,9 +107,8 @@ class RoomHandler {
             }
         } else if (creep.carry.energy < creep.carryCapacity) {
             let storage = Game.getObjectById(creep.memory.storageID);
-            let storages = [];
             if (StorageUtils.isState(storage, 'Any', 'NotEmpty')) {
-                storages = StorageUtils.storages_get(this.room, 'Any', 'NotEmpty');
+                let storages = StorageUtils.storages_get(this.room, 'Any', 'NotEmpty');
                 if (storages && storages.length) {
                     storage = this.room.controller.pos.findClosestByPath(storages);
                     if (storage)
@@ -168,20 +179,20 @@ class RoomHandler {
     }
 
     runSpawnRefiller(creep) {
-        let spawns = this.room.find(FIND_MY_SPAWNS);
-        if (!spawns || !spawns.length) {
-            console.log("No spawn found in room " + this.room);
-            return;
-        }
-        let spawn = spawns[0];
         if (creep.memory.working && creep.carry.energy > 0) {
+            let spawn = Game.getObjectById(creep.memory.spawnID);
+            if (spawn && StorageUtils.isState(spawn, 'Energy', 'Full')) {
+                let spawns = StorageUtils.storages_get(this.room, 'Energy', 'NotFull');
+                if (spawns)
+                    spawn = creep.pos.findClosestByPath(spawns);
+            }
             if (spawn && ERR_NOT_IN_RANGE === creep.transfer(spawn, RESOURCE_ENERGY)) {
                 creep.moveTo(spawn);
             }
         } else if (creep.memory.working) {
             let storages = StorageUtils.storages_get(this.room, 'Container', 'NotEmpty');
             if (storages && storages.length) {
-                let storage = spawn.pos.findClosestByPath(storages);
+                let storage = creep.pos.findClosestByPath(storages);
                 if (storage) {
                     creep.memory.storageID = storage.id;
                     creep.memory.working = false;
@@ -189,11 +200,31 @@ class RoomHandler {
             }
         } else if (creep.carry.energy < creep.carryCapacity) {
             let storage = Game.getObjectById(creep.memory.storageID);
+            if (StorageUtils.isState(storage, 'Container', 'Empty')) {
+                let storages = StorageUtils.storages_get(this.room, 'Container', 'NotEmpty');
+                if (storages && storages.length) {
+                    storage = creep.pos.findClosestByPath(storages);
+                    if (storage)
+                        creep.memory.storageID = storage.id;
+                    else
+                        creep.memory.working = true;
+                }
+                else
+                    creep.memory.working = true;
+            }
             if (storage && ERR_NOT_IN_RANGE === creep.withdraw(storage, RESOURCE_ENERGY)) {
                 creep.moveTo(storage);
             }
         } else {
-            creep.memory.working = true;
+            let spawns = StorageUtils.storages_get(this.room, 'Energy', 'NotFull');
+            if (spawns) {
+                let spawn = creep.pos.findClosestByPath(spawns);
+                if (spawn) {
+                    creep.memory.spawnID = spawn.id;
+                    delete creep.memory.storageID;
+                    creep.memory.working = true;
+                }
+            }
         }
     }
 }

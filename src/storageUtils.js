@@ -1,8 +1,8 @@
 class StorageUtils {
     static isState(structure, type, state) {
         if (('Any' === type || 'Energy' === type) &&
-            STRUCTURE_SPAWN === structure.structureType ||
-            STRUCTURE_EXTENSION === structure.structureType) {
+            (STRUCTURE_SPAWN === structure.structureType ||
+                STRUCTURE_EXTENSION === structure.structureType)) {
             if (!state)
                 return true;
             if ('Empty' === state && 0 === structure.energy)
@@ -37,7 +37,7 @@ class StorageUtils {
         structures.forEach(function (structure) {
             if (this.isState(structure, type, state))
                 storages.push(structure);
-        });
+        }, this);
         //console.log("Call : storages_get(" + room + ", '" + type + "', '" + state + "')");
         return storages;
     }
